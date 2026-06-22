@@ -7,3 +7,4 @@ venv/
 .codex
 certs
 .agents
+.streamlit/secrets.toml

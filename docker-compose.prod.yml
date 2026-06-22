@@ -1,0 +1,23 @@
+services:
+  supplier-finder:
+    image: ${APP_IMAGE}
+    container_name: supplier-finder
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "${APP_PORT:-8501}:8501"
+    volumes:
+      - ./certs:/app/certs:ro
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8501/_stcore/health', timeout=3).read()",
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3

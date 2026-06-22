@@ -139,6 +139,51 @@ USE_FIXED_SEARCH_URLS=true python cli.py "мясо говядина" --region Е
 затем обрезает финальную таблицу тем же значением. Для Yandex Search API размер
 одной страницы выдачи задаётся отдельным слайдером `Ссылок с одной страницы Яндекса`.
 
+## Docker
+
+Локальная сборка и запуск:
+
+```bash
+docker build -t supplier-finder .
+docker run --rm --env-file .env -p 8501:8501 supplier-finder
+```
+
+Production compose-файл ожидает готовый образ:
+
+```bash
+APP_IMAGE=ghcr.io/<owner>/<repo>:latest APP_PORT=8501 docker compose -f docker-compose.prod.yml up -d
+```
+
+Если для GigaChat нужен отдельный CA bundle, положите файл на сервер в `certs/`
+рядом с `docker-compose.prod.yml` и укажите в `.env`, например:
+`GIGACHAT_CA_BUNDLE_FILE=/app/certs/russian_trusted_root_ca.pem`.
+
+## CI/CD на GitHub Actions
+
+Workflow `.github/workflows/deploy.yml` при push в `main` собирает Docker-образ,
+публикует его в GitHub Container Registry (`ghcr.io`) и по SSH обновляет контейнер
+на Ubuntu-сервере.
+
+На сервере должны быть установлены Docker и Docker Compose plugin. Пользователь,
+под которым выполняется SSH, должен иметь право запускать `docker` и писать в
+директорию деплоя, по умолчанию `/opt/supplier-finder`.
+
+GitHub secrets:
+
+| Secret | Назначение |
+|--------|------------|
+| `SSH_HOST` | IP или домен сервера |
+| `SSH_USER` | SSH-пользователь на сервере |
+| `SSH_KEY` | приватный SSH-ключ для деплоя |
+| `SSH_PORT` | SSH-порт, опционально, по умолчанию `22` |
+| `APP_ENV` | содержимое production `.env`; если не задано, `.env` должен уже лежать на сервере |
+| `APP_PORT` | внешний порт приложения, опционально, по умолчанию `8501` |
+| `DEPLOY_PATH` | директория деплоя, опционально, по умолчанию `/opt/supplier-finder` |
+| `GHCR_USERNAME` | GitHub username для pull из GHCR, нужен для private package |
+| `GHCR_TOKEN` | token с `read:packages`, нужен для private package |
+
+Для публичного GHCR package `GHCR_USERNAME` и `GHCR_TOKEN` можно не задавать.
+
 ---
 
 ## Структура проекта
