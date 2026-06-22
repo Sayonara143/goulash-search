@@ -1,0 +1,93 @@
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "Ты — строгий модуль извлечения структурированных данных о B2B-поставщиках из уже спарсенного текста веб-страницы. Ты НЕ ищешь информацию в интернете. Ты НЕ переходишь по ссылкам. Ты НЕ проверяешь сайт. Ты получаешь только очищенный текст страницы и должен извлечь из него структурированные данные. Работай только с фактами, которые явно есть в переданном тексте. Если поле не найдено в тексте: для строк возвращай null, для массивов возвращай [], для boolean возвращай false. Ответ должен строго соответствовать JSON Schema. Не добавляй текст вне JSON."
+    },
+    {
+      "role": "user",
+      "content": "Проанализируй очищенный текст страницы и извлеки данные о поставщике food/B2B-направления.\n\nКонтекст поиска:\nКатегория товара: {{category}}\nРегион или город поиска: {{region}}\n\nИсточник:\nURL страницы: {{url}}\nЗаголовок страницы: не указан\nНайденные телефоны регуляркой: {{phones}}\nНайденные email регуляркой: {{emails}}\n\nТекст страницы:\n{{text}}"
+    }
+  ],
+  "response_format": {
+    "type": "json_schema",
+    "schema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "suppliers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": ["string", "null"]
+              },
+              "products": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "website": {
+                "type": ["string", "null"]
+              },
+              "phone": {
+                "type": ["string", "null"]
+              },
+              "email": {
+                "type": ["string", "null"]
+              },
+              "source_url": {
+                "type": "string"
+              },
+              "region": {
+                "type": ["string", "null"]
+              },
+              "min_order": {
+                "type": ["string", "null"]
+              },
+              "price_info": {
+                "type": ["string", "null"]
+              },
+              "certificates": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "delivery": {
+                "type": ["string", "null"]
+              },
+              "notes": {
+                "type": ["string", "null"]
+              }
+            },
+            "required": [
+              "name",
+              "description",
+              "products",
+              "website",
+              "phone",
+              "email",
+              "source_url",
+              "region",
+              "min_order",
+              "price_info",
+              "certificates",
+              "delivery",
+              "notes"
+            ]
+          }
+        }
+      },
+      "required": ["suppliers"]
+    },
+    "strict": true
+  },
+  "temperature": 0.1
+}

@@ -1,0 +1,49 @@
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": "Ты генерируешь поисковые запросы для Yandex Search API.\n\nЦель: найти реальные компании-поставщики продуктов питания, упаковки, ингредиентов или товаров для food-направления.\n\nВходные данные:\nКатегория товара: {{category}}\nГород: {{city}}\nРегион: {{region}}\n\nСгенерируй от 8 до 12 поисковых запросов на русском языке.\n\nТребования к запросам:\n\n1. Запросы должны быть коммерческими и B2B-ориентированными.\n2. Каждый запрос должен содержать категорию товара.\n3. Большинство запросов должны содержать город или регион.\n4. Используй разные поисковые намерения:\n\n   * поставщики;\n   * опт;\n   * производители;\n   * дистрибьюторы;\n   * HoReCa;\n   * продукты для кафе и ресторанов.\n5. Не выдумывай названия компаний.\n6. Не используй кавычки.\n7. Не используй поисковые операторы site:, inurl:, filetype:.\n8. Не делай слишком общие запросы вроде “еда Екатеринбург”.\n9. Не добавляй пояснения вне JSON.\n10. Верни только валидный JSON.\n\nФормат ответа:\n\n{\n\"queries\": [\n{\n\"type\": \"supplier\",\n\"query\": \"поставщики молочной продукции Екатеринбург оптом\",\n\"reason\": \"поиск компаний, которые могут поставлять товар оптом\"\n}\n]\n}\n\nДопустимые значения поля type:\n\n* supplier\n* wholesale\n* manufacturer\n* distributor\n* horeca\n* catalog"
+    }
+  ],
+  "response_format": {
+    "type": "json_schema",
+    "schema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "queries": {
+          "type": "array",
+          "minItems": 8,
+          "maxItems": 12,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "supplier",
+                  "wholesale",
+                  "manufacturer",
+                  "distributor",
+                  "horeca",
+                  "catalog"
+                ]
+              },
+              "query": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": ["type", "query", "reason"]
+          }
+        }
+      },
+      "required": ["queries"]
+    },
+    "strict": true
+  },
+  "temperature": 0.2
+}
