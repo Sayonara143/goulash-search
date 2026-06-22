@@ -126,8 +126,23 @@ with st.sidebar:
         min_value=1,
         max_value=100,
         value=20,
+        help=(
+            "Сколько ссылок-результатов брать с одной страницы выдачи Яндекса. "
+            "Больше значение — шире охват и больше кандидатов на скрапинг, "
+            "но дольше поиск и выше расход запросов к API."
+        ),
     )
-    demo_mode = st.toggle("Демо-режим (без API)", value=True)
+    demo_mode = st.toggle(
+        "Демо-режим (без API)",
+        value=True,
+        help=(
+            "Включено: интерфейс работает на заранее подготовленных мок-данных, "
+            "реальные запросы к Яндексу и GigaChat не выполняются и ключи API не нужны — "
+            "удобно для демонстрации и отладки UI без расходов. "
+            "Выключено: выполняется настоящий поиск и извлечение данных через API "
+            "(нужны действующие ключи)."
+        ),
+    )
     run = st.button("Найти поставщиков", type="primary")
 
 
@@ -284,36 +299,6 @@ def _render_found_links(
                 f'<div class="found-links-wrap"><ol class="found-links-list">{items}</ol></div>',
                 unsafe_allow_html=True,
             )
-        if scraped_pages:
-            with st.expander("Содержимое найденных страниц", expanded=False):
-                for i, page in enumerate(scraped_pages, 1):
-                    st.markdown(f"**{i}. {page.url}**")
-                    st.text(page.text)
-
-
-def _render_extraction_diagnostics(placeholder, diagnostics: list) -> None:
-    if not diagnostics:
-        return
-
-    rows = [
-        {
-            "Ссылка": item.url,
-            "Статус": item.status,
-            "Поставщиков": item.suppliers_found,
-            "Ошибка GigaChat": item.error or "—",
-        }
-        for item in diagnostics
-    ]
-
-    with placeholder.container():
-        st.subheader("Отладка GigaChat по ссылкам")
-        st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
-
-        errors = [item for item in diagnostics if item.error]
-        if errors:
-            with st.expander("Ошибки и пустые ответы", expanded=True):
-                for item in errors:
-                    st.markdown(f"- {item.url}: `{item.error}`")
 
 
 def _usage_value(source, field: str) -> int:
@@ -426,7 +411,6 @@ if run:
             "extraction_diagnostics": [],
         }
         found_links_placeholder = st.empty()
-        diagnostics_placeholder = st.empty()
 
         def _on_pages_found(
             candidate_urls: list[str], scraped_urls: list[str], scraped_pages: list
@@ -440,7 +424,6 @@ if run:
 
         def _on_extraction_update(diagnostics: list) -> None:
             pages_state["extraction_diagnostics"] = diagnostics
-            _render_extraction_diagnostics(diagnostics_placeholder, diagnostics)
 
         def _on_pipeline_update(stage: str, status: str, payload: dict) -> None:
             entry = pipeline_state.setdefault(stage, {"status": "pending", "payload": {}})
@@ -468,9 +451,6 @@ if run:
                     pages_state["candidate_urls"],
                     pages_state["scraped_urls"],
                     pages_state["scraped_pages"],
-                )
-                _render_extraction_diagnostics(
-                    diagnostics_placeholder, pages_state["extraction_diagnostics"]
                 )
                 st.error(
                     "На этапе извлечения данных произошла ошибка. "
